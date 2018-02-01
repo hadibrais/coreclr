@@ -8112,7 +8112,9 @@ void JitTimer::PrintCsvHeader()
             fprintf(fp, "\"GC Info Bytes\",");
             fprintf(fp, "\"Total Bytes Allocated\",");
             fprintf(fp, "\"Total Cycles\",");
-            fprintf(fp, "\"CPS\"\n");
+            fprintf(fp, "\"CPS\",");
+            fprintf(fp, "\"Start Time\",");
+            fprintf(fp, "\"Thread ID\"\n");
         }
         fclose(fp);
     }
@@ -8179,7 +8181,16 @@ void JitTimer::PrintCsvMethodStats(Compiler* comp)
     fprintf(fp, "%Iu,", comp->compInfoBlkSize);
     fprintf(fp, "%Iu,", comp->compGetArenaAllocator()->getTotalBytesAllocated());
     fprintf(fp, "%I64u,", m_info.m_totalCycles);
-    fprintf(fp, "%f\n", CycleTimer::CyclesPerSecond());
+    fprintf(fp, "%f,", CycleTimer::CyclesPerSecond());
+    fprintf(fp, "%I64u,", m_start);
+    
+    // Combine the current thread ID and its creation time to form a thread ID
+    // that is unique throughout the lifetime of the program.
+    fprintf(fp, "%u", GetCurrentThreadId());
+    FILETIME creationTime, exitTime, kernelTime, userTime;
+    GetThreadTimes(GetCurrentThread(), &creationTime, &exitTime, &kernelTime, &userTime);
+    fprintf(fp, "%I64u\n", creationTime);
+
     fclose(fp);
 }
 
