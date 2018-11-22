@@ -8087,9 +8087,10 @@ void JitTimer::PrintCsvHeader()
         // Seek to the end of the file s.t. `ftell` doesn't lie to us on Windows
         fseek(fp, 0, SEEK_END);
 
-        // Write the header if the file is empty
-        if (ftell(fp) == 0)
-        {
+        // Write the header irrespective of whether the file is empty or not
+        // so that JIT time logs of different sequential runs can be recognized.
+        // if (ftell(fp) == 0)
+        // {
             fprintf(fp, "\"Method Name\",");
             fprintf(fp, "\"Assembly or SPMI Index\",");
             fprintf(fp, "\"IL Bytes\",");
@@ -8113,9 +8114,9 @@ void JitTimer::PrintCsvHeader()
             fprintf(fp, "\"Total Bytes Allocated\",");
             fprintf(fp, "\"Total Cycles\",");
             fprintf(fp, "\"CPS\",");
-            fprintf(fp, "\"Start Time\",");
-            fprintf(fp, "\"Thread ID\"\n");
-        }
+            fprintf(fp, "\"JIT Start Time\",");
+            fprintf(fp, "\"Thread ID : Creation Time\"\n");
+        // }
         fclose(fp);
     }
 }
@@ -8186,7 +8187,7 @@ void JitTimer::PrintCsvMethodStats(Compiler* comp)
     
     // Combine the current thread ID and its creation time to form a thread ID
     // that is unique throughout the lifetime of the program.
-    fprintf(fp, "%u", GetCurrentThreadId());
+    fprintf(fp, "%u:", GetCurrentThreadId());
     FILETIME creationTime, exitTime, kernelTime, userTime;
     GetThreadTimes(GetCurrentThread(), &creationTime, &exitTime, &kernelTime, &userTime);
     fprintf(fp, "%I64u\n", creationTime);
