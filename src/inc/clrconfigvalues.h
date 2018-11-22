@@ -580,6 +580,8 @@ RETAIL_CONFIG_DWORD_INFO_EX(EXTERNAL_PerfMapIgnoreSignal, W("PerfMapIgnoreSignal
 
 RETAIL_CONFIG_STRING_INFO(EXTERNAL_StartupDelayMS, W("StartupDelayMS"), "")
 
+RETAIL_CONFIG_STRING_INFO(INTERNAL_ExeTimeLog, W("ExeTimeLog"), "If set, measure wall-clock execution time and write to this file.")
+
 ///
 /// Stress
 ///

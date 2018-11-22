@@ -6,6 +6,7 @@
 #include <string>
 #include <string.h>
 #include <sys/stat.h>
+#include <chrono>
 
 // Display the command line options
 void DisplayUsage()
@@ -91,10 +92,9 @@ bool ParseArguments(
     return success;
 }
 
-int corerun(const int argc, const char* argv[])
+int corerun(const int argc, const char* argv[], const char** managedAssemblyPath)
 {
     const char* clrFilesPath;
-    const char* managedAssemblyPath;
     const char** managedAssemblyArgv;
     int managedAssemblyArgc;
 
@@ -102,7 +102,7 @@ int corerun(const int argc, const char* argv[])
             argc,
             argv,
             &clrFilesPath,
-            &managedAssemblyPath,
+            managedAssemblyPath,
             &managedAssemblyArgc,
             &managedAssemblyArgv))
     {
@@ -112,7 +112,7 @@ int corerun(const int argc, const char* argv[])
 
     // Check if the specified managed assembly file exists
     struct stat sb;
-    if (stat(managedAssemblyPath, &sb) == -1)
+    if (stat(*managedAssemblyPath, &sb) == -1)
     {
         perror("Managed assembly not found");
         return -1;
@@ -140,7 +140,7 @@ int corerun(const int argc, const char* argv[])
     }
 
     std::string managedAssemblyAbsolutePath;
-    if (!GetAbsolutePath(managedAssemblyPath, managedAssemblyAbsolutePath))
+    if (!GetAbsolutePath(*managedAssemblyPath, managedAssemblyAbsolutePath))
     {
         perror("Failed to convert managed assembly path to absolute path");
         return -1;
@@ -158,5 +158,32 @@ int corerun(const int argc, const char* argv[])
 
 int main(const int argc, const char* argv[])
 {
-    return corerun(argc, argv);
+    const char* managedAssemblyPath;
+    LPCWSTR jitTimeLogCsv = g_pConfig.ExeTimeLog();
+
+    if(jitTimeLogCsv == nullptr)
+    {
+        return corerun(argc, argv, &managedAssemblyPath);
+    }
+
+    FILE* fp = _wfopen(jitTimeLogCsv, W("a"));
+    if (fp != nullptr)
+    {
+        // Seek to the end of the file
+        fseek(fp, 0, SEEK_END);
+    }
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    int returnCore = corerun(argc, argv, &managedAssemblyPath);
+    std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+
+    if (fp != nullptr)
+    {
+        std::size_type exeTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+        fprintf(fp, "%s\n", managedAssemblyPath);
+        fprintf(fp, "%Iu\n", exeTime);
+        fclose(fp);
+    }
+
+    return returnCore;
 }
