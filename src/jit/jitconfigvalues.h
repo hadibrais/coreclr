@@ -350,6 +350,8 @@ CONFIG_STRING(JitInlineReplayFile, W("JitInlineReplayFile"))
 CONFIG_INTEGER(JitInlinePolicyModel, W("JitInlinePolicyModel"), 0)
 CONFIG_INTEGER(JitObjectStackAllocation, W("JitObjectStackAllocation"), 0)
 
+CONFIG_INTEGER(JitInlinePolicyNever, W("JitInlinePolicyNever"), 0)
+
 CONFIG_INTEGER(JitEECallTimingInfo, W("JitEECallTimingInfo"), 0)
 
 #if defined(DEBUG)

@@ -1705,6 +1705,9 @@ CLRRandom* InlineStrategy::GetRandom()
 bool InlineStrategy::IsNoInline(ICorJitInfo* info, CORINFO_METHOD_HANDLE method)
 {
 
+    if(JitConfig.JitInlinePolicyNever() == 1)
+        return true;
+
 #if defined(DEBUG) || defined(INLINE_DATA)
 
     static ConfigMethodRange range;
